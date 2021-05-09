@@ -1,13 +1,17 @@
 Engine_PaulStretch : CroneEngine {
+	var grainEnv;
+	var buffer1;
+	var buffer2;
+	var synth1;
+	var synth2;
 
 	*new { arg context, doneCallback;
 		^super.new(context, doneCallback);
 	}
 
 	alloc {
-		var server = Crone.server;
-		var stretchdef = SynthDef(\paulstretch, {
-			arg out, buf, envbuf, pan=0, stretch=50, window=0.25, amp=1;
+		SynthDef(\paulstretch, {
+			arg out, buf, envbuf, pan=0, stretch=50, window=0.25, amp=0.7;
 			var trigPeriod, sig, chain, trig, pos, fftSize, fftCompensation;
 
 			// Calculating fft buffer size according to suggested window size
@@ -48,34 +52,38 @@ Engine_PaulStretch : CroneEngine {
 
 			// Mix grains and pan output
 			Out.ar(out, Pan2.ar(Mix.new(sig), pan));
-		});
+		}).add;
 
-		stretchdef.send(server);
-		server.sync();
-
-		// EXAMPLE
-		~buffer1 = Buffer.readChannel(server, "/home/we/dust/audio/tehn/whirl1.aif", channels: [0]);
-		~buffer2 = Buffer.readChannel(server, "/home/we/dust/audio/tehn/whirl1.aif", channels: [1]);
+		context.server.sync();
 
 		// The grain envelope
-		~envBuf = Buffer.alloc(server, server.sampleRate, 1);
+		grainEnv = Buffer.alloc(context.server, context.server.sampleRate, 1);
+		grainEnv.loadCollection(Signal.newClear(context.server.sampleRate).waveFill({|x| (1 - x.pow(2)).pow(1.25)}, -1.0, 1.0));
 
-		// do FFT math language side (signal is language based, buffer is server based)
-		// possibly move this to be evaluated server side with LocalBuf?
-		// potentially can simplify envelope too somehow? default hann?
-		~envSignal = Signal.newClear(server.sampleRate).waveFill({|x| (1 - x.pow(2)).pow(1.25)}, -1.0, 1.0);
-		~envBuf.loadCollection(~envSignal);
-		server.sync();
+		this.addCommand("play1", "s", { arg msg;
+			var path = msg[1];
+			buffer1 = Buffer.readChannel(context.server, path, channels: [0]);
+			synth1 = Synth(\paulstretch, [\buf, buffer1, \envbuf, grainEnv, stretch: 100, \window, 0.250, \pan, -0.8]);
+		});
 
+		this.addCommand("play2", "s", { arg msg;
+			var path = msg[1];
+			buffer2 = Buffer.readChannel(context.server, path, channels: [0]);
+			synth2 = Synth(\paulstretch, [\buf, buffer2, \envbuf, grainEnv, stretch: 100, \window, 0.250, \pan, 0.8]);
+		});
 
-		this.addCommand("play", "f", { arg msg;
-			Synth(\paulstretch, [\buf, ~buffer1, \envbuf, ~envBuf, stretch: 100, \window, 0.250, \pan, msg[1]]);
+		this.addCommand("stretch1", "i", { arg msg;
+			synth1.set(\stretch, msg[1]);
+		});
+
+		this.addCommand("stretch2", "i", { arg msg;
+			synth2.set(\stretch, msg[1]);
 		});
 	}
 
 	free {
-		// Aggressive freeing
-		Crone.server.freeAll;
+		// TODO more nuanced freeing
+		context.server.freeAll;
 	}
 }
 
