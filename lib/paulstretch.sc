@@ -9,7 +9,7 @@ Engine_PaulStretch : CroneEngine {
 	}
 
 	alloc {
-		maxVoices = 2;
+		maxVoices = 4;
 
 		SynthDef(\paulstretch, {
 			arg out, buf, envbuf, pan=0, stretch=50, window=0.25, amp=0.7;
@@ -60,7 +60,7 @@ Engine_PaulStretch : CroneEngine {
 		// The grain envelope
 		grainEnv = Buffer.alloc(context.server, context.server.sampleRate, 1);
 		grainEnv.loadCollection(Signal.newClear(context.server.sampleRate).waveFill({|x| (1 - x.pow(2)).pow(1.25)}, -1.0, 1.0));
-		
+
 		// Initialise empty buffers and synths
 		buffers = Array.fill(maxVoices, {arg i; Buffer.alloc(context.server, context.server.sampleRate, 1); });
 		voices = Array.fill(maxVoices, {arg i;
@@ -73,6 +73,20 @@ Engine_PaulStretch : CroneEngine {
 			this.loadBuffer(msg[1] - 1, msg[2]);
 		});
 
+		this.addCommand("stretch", "ii", { arg msg;
+			var voice = msg[1] - 1;
+			voices[voice].set(\stretch, msg[2]);
+		});
+
+		this.addCommand("pan", "if", { arg msg;
+			var voice = msg[1] - 1;
+			voices[voice].set(\pan, msg[2]);
+		});
+
+		this.addCommand("volume", "if", { arg msg;
+			var voice = msg[1] - 1;
+			voices[voice].set(\amp, msg[2]);
+		});
 	}
 
 	loadBuffer { arg voice, path;
@@ -84,8 +98,8 @@ Engine_PaulStretch : CroneEngine {
 	}
 
 	free {
-		// TODO more nuanced freeing
-		context.server.freeAll;
+		buffers.do({ arg b; b.free });
+		voices.do({ arg v; v.free });
 	}
 }
 
