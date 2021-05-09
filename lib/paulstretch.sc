@@ -1,15 +1,16 @@
 Engine_PaulStretch : CroneEngine {
+	var buffers;
 	var grainEnv;
-	var buffer1;
-	var buffer2;
-	var synth1;
-	var synth2;
+	var maxVoices;
+	var voices;
 
 	*new { arg context, doneCallback;
 		^super.new(context, doneCallback);
 	}
 
 	alloc {
+		maxVoices = 2;
+
 		SynthDef(\paulstretch, {
 			arg out, buf, envbuf, pan=0, stretch=50, window=0.25, amp=0.7;
 			var trigPeriod, sig, chain, trig, pos, fftSize, fftCompensation;
@@ -59,25 +60,26 @@ Engine_PaulStretch : CroneEngine {
 		// The grain envelope
 		grainEnv = Buffer.alloc(context.server, context.server.sampleRate, 1);
 		grainEnv.loadCollection(Signal.newClear(context.server.sampleRate).waveFill({|x| (1 - x.pow(2)).pow(1.25)}, -1.0, 1.0));
-
-		this.addCommand("play1", "s", { arg msg;
-			var path = msg[1];
-			buffer1 = Buffer.readChannel(context.server, path, channels: [0]);
-			synth1 = Synth(\paulstretch, [\buf, buffer1, \envbuf, grainEnv, stretch: 100, \window, 0.250, \pan, -0.8]);
+		
+		// Initialise empty buffers and synths
+		buffers = Array.fill(maxVoices, {arg i; Buffer.alloc(context.server, context.server.sampleRate, 1); });
+		voices = Array.fill(maxVoices, {arg i;
+			// Workaround: wait to avoid jack "Supercollider was not finished" errors
+			1.wait;
+			Synth(\paulstretch, [\buf, buffers[i], \envbuf, grainEnv]);
 		});
 
-		this.addCommand("play2", "s", { arg msg;
-			var path = msg[1];
-			buffer2 = Buffer.readChannel(context.server, path, channels: [0]);
-			synth2 = Synth(\paulstretch, [\buf, buffer2, \envbuf, grainEnv, stretch: 100, \window, 0.250, \pan, 0.8]);
+		this.addCommand("read", "is", { arg msg;
+			this.loadBuffer(msg[1] - 1, msg[2]);
 		});
 
-		this.addCommand("stretch1", "i", { arg msg;
-			synth1.set(\stretch, msg[1]);
-		});
+	}
 
-		this.addCommand("stretch2", "i", { arg msg;
-			synth2.set(\stretch, msg[1]);
+	loadBuffer { arg voice, path;
+		var newbuf = Buffer.readChannel(context.server, path, channels: [0], action: {
+			voices[voice].set(\buf, newbuf);
+			buffers[voice].free;
+			buffers[voice] = newbuf;
 		});
 	}
 
