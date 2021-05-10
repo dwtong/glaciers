@@ -1,4 +1,4 @@
-Engine_PaulStretch : CroneEngine {
+Engine_Glacial : CroneEngine {
 	var buffers;
 	var grainEnv;
 	var maxVoices;
@@ -11,8 +11,8 @@ Engine_PaulStretch : CroneEngine {
 	alloc {
 		maxVoices = 4;
 
-		SynthDef(\paulstretch, {
-			arg out, buf, envbuf, pan=0, stretch=50, window=0.25, amp=0.7;
+		SynthDef(\stretch, {
+			arg out, buf, envbuf, pan=0, stretch=50, window=0.25, amp=0.7, pitchmix=0.5, pitchharm=2.0;
 			var trigPeriod, sig, chain, trig, pos, fftSize, fftCompensation;
 
 			// Calculating fft buffer size according to suggested window size
@@ -52,7 +52,14 @@ Engine_PaulStretch : CroneEngine {
 			sig = DelayC.ar(sig, fftCompensation, fftCompensation);
 
 			// Mix grains and pan output
-			Out.ar(out, Pan2.ar(Mix.new(sig), pan));
+			sig = Pan2.ar(Mix.new(sig), pan);
+
+			sig = XFade2.ar(sig, PitchShift.ar(sig, 0.5, pitchharm, 0.01, 0.02), pitchmix * 2 - 1);
+
+			// TODO move reverb to separate synth
+			// sig = XFade2.ar(sig, JPverb.ar(HPF.ar(sig, 100), t60: 30, size: 5), verbmix * 2 - 1);
+
+			Out.ar(out, sig);
 		}).add;
 
 		context.server.sync();
@@ -65,8 +72,8 @@ Engine_PaulStretch : CroneEngine {
 		buffers = Array.fill(maxVoices, {arg i; Buffer.alloc(context.server, context.server.sampleRate, 1); });
 		voices = Array.fill(maxVoices, {arg i;
 			// Workaround: wait to avoid jack "Supercollider was not finished" errors
-			1.wait;
-			Synth(\paulstretch, [\buf, buffers[i], \envbuf, grainEnv]);
+			0.1.wait;
+			Synth(\stretch, [buf: buffers[i], envbuf: grainEnv]);
 		});
 
 		this.addCommand("read", "is", { arg msg;
@@ -83,6 +90,16 @@ Engine_PaulStretch : CroneEngine {
 			voices[voice].set(\pan, msg[2]);
 		});
 
+		this.addCommand("pitchmix", "if", { arg msg;
+			var voice = msg[1] - 1;
+			voices[voice].set(\pitchmix, msg[2]);
+		});
+
+		this.addCommand("pitchharm", "if", { arg msg;
+			var voice = msg[1] - 1;
+			voices[voice].set(\pitchharm, msg[2]);
+		});
+
 		this.addCommand("volume", "if", { arg msg;
 			var voice = msg[1] - 1;
 			voices[voice].set(\amp, msg[2]);
@@ -91,9 +108,9 @@ Engine_PaulStretch : CroneEngine {
 
 	loadBuffer { arg voice, path;
 		var newbuf = Buffer.readChannel(context.server, path, channels: [0], action: {
-			voices[voice].set(\buf, newbuf);
 			buffers[voice].free;
 			buffers[voice] = newbuf;
+			voices[voice].set(\buf, newbuf);
 		});
 	}
 
