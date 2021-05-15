@@ -32,7 +32,7 @@ Engine_Glacial : CroneEngine {
 
 	stretchdef {
 		^SynthDef(\stretch, {
-			arg out, buf, envbuf, pan=0, stretch=50, window=0.25, amp=0.7, pitchmix=0.5, pitchharm=2.0;
+			arg out, buf, envbuf, pan=0, stretch=100, window=0.25, amp=0.5, pitchmix=0.5, pitchharm=2.0;
 			var trigPeriod, sig, chain, trig, pos, fftSize, fftCompensation;
 
 			// Calculating fft buffer size according to suggested window size
