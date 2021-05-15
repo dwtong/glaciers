@@ -2,6 +2,7 @@ Engine_Glacial : CroneEngine {
 	var buffers;
 	var grainEnv;
 	var voices;
+	var pg;
 
 	var maxVoices = 4;
 
@@ -16,11 +17,15 @@ Engine_Glacial : CroneEngine {
 		grainEnv = Buffer.alloc(context.server, context.server.sampleRate, 1);
 		grainEnv.loadCollection(Signal.newClear(context.server.sampleRate).waveFill({|x| (1 - x.pow(2)).pow(1.25)}, -1.0, 1.0));
 
+		pg = ParGroup.head(context.xg);
+
 		buffers = Array.fill(maxVoices, {arg i; Buffer.alloc(context.server, context.server.sampleRate, 1); });
 		voices = Array.fill(maxVoices, {arg i;
-			0.1.wait; // Workaround: wait to avoid jack "Supercollider was not finished" errors
-			Synth(\stretch, [buf: buffers[i], envbuf: grainEnv]);
+			0.5.wait; // Workaround: wait to avoid jack "Supercollider was not finished" errors
+			Synth(\stretch, [buf: buffers[i], envbuf: grainEnv, out: context.out_b.index], target: pg);
 		});
+
+		context.server.sync;
 
 		this.addCommands;
 	}
@@ -31,8 +36,9 @@ Engine_Glacial : CroneEngine {
 			var trigPeriod, sig, chain, trig, pos, fftSize, fftCompensation;
 
 			// Calculating fft buffer size according to suggested window size
-			// Reduce by half to optimise for Norns
+			// Reduce by half to optimise for Norns and double stretch to compensate
 			fftSize = (2 ** floor(log2(window * SampleRate.ir))) / 2;
+			stretch = stretch * 2;
 
 			// Windows (using grains)
 			trigPeriod = fftSize/SampleRate.ir;
@@ -67,8 +73,7 @@ Engine_Glacial : CroneEngine {
 			sig = DelayC.ar(sig, fftCompensation, fftCompensation);
 
 			sig = Pan2.ar(Mix.new(sig), pan);
-
-			sig = XFade2.ar(sig, PitchShift.ar(sig, 0.5, pitchharm, 0.01, 0.02), pitchmix * 2 - 1);
+			sig = XFade2.ar(sig, PitchShift.ar(sig, trigPeriod, pitchharm, 0, 0.1), pitchmix * 2 - 1);
 
 			Out.ar(out, sig);
 		});
