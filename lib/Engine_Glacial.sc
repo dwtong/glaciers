@@ -32,7 +32,7 @@ Engine_Glacial : CroneEngine {
 
 	stretchdef {
 		^SynthDef(\stretch, {
-			arg out, buf, envbuf, pan=0, stretch=100, window=0.25, amp=0.5, pitchmix=0.5, pitchharm=2.0;
+			arg out, buf, envbuf, pan=0, stretch=100, window=0.25, amp=0.7, pitchMix=0.5, pitchHarm=2.0, panRate=0, panDepth=0;
 			var trigPeriod, sig, chain, trig, pos, fftSize, fftCompensation;
 
 			// Calculating fft buffer size according to suggested window size
@@ -72,8 +72,12 @@ Engine_Glacial : CroneEngine {
 			fftCompensation = (fftSize - BlockSize.ir)/SampleRate.ir;
 			sig = DelayC.ar(sig, fftCompensation, fftCompensation);
 
-			sig = Pan2.ar(Mix.new(sig), pan);
-			sig = XFade2.ar(sig, PitchShift.ar(sig, trigPeriod, pitchharm, 0, 0.1), pitchmix * 2 - 1);
+			// Panning
+			sig = Mix.new(sig);
+			sig = Pan2.ar(sig, SinOsc.kr(panRate).range(pan - panDepth, pan + panDepth));
+
+			// Pitch shifting
+			sig = XFade2.ar(sig, PitchShift.ar(sig, trigPeriod, pitchHarm, 0, 0.1), pitchMix * 2 - 1);
 
 			Out.ar(out, sig);
 		});
@@ -104,12 +108,22 @@ Engine_Glacial : CroneEngine {
 
 		this.addCommand("pitchmix", "if", { arg msg;
 			var voice = msg[1] - 1;
-			voices[voice].set(\pitchmix, msg[2]);
+			voices[voice].set(\pitchMix, msg[2]);
 		});
 
 		this.addCommand("pitchharm", "if", { arg msg;
 			var voice = msg[1] - 1;
-			voices[voice].set(\pitchharm, msg[2]);
+			voices[voice].set(\pitchHarm, msg[2]);
+		});
+
+		this.addCommand("pandepth", "if", { arg msg;
+			var voice = msg[1] - 1;
+			voices[voice].set(\panDepth, msg[2]);
+		});
+
+		this.addCommand("panrate", "if", { arg msg;
+			var voice = msg[1] - 1;
+			voices[voice].set(\panRate, msg[2]);
 		});
 
 		this.addCommand("volume", "if", { arg msg;
