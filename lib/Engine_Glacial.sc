@@ -21,7 +21,7 @@ Engine_Glacial : CroneEngine {
 
 		buffers = Array.fill(maxVoices, {arg i; Buffer.alloc(context.server, context.server.sampleRate, 1); });
 		voices = Array.fill(maxVoices, {arg i;
-			0.5.wait; // Workaround: wait to avoid jack "Supercollider was not finished" errors
+			0.1.wait; // Workaround: wait to avoid jack "Supercollider was not finished" errors
 			Synth(\stretch, [buf: buffers[i], envbuf: grainEnv, out: context.out_b.index], target: pg);
 		});
 
@@ -128,7 +128,7 @@ Engine_Glacial : CroneEngine {
 
 		this.addCommand("volume", "if", { arg msg;
 			var voice = msg[1] - 1;
-			voices[voice].set(\amp, msg[2]);
+			voices[voice].set(\amp, msg[2].dbamp);
 		});
 	}
 
