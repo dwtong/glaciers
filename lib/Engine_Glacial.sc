@@ -21,7 +21,7 @@ Engine_Glacial : CroneEngine {
 
 		buffers = Array.fill(maxVoices, {arg i; Buffer.alloc(context.server, context.server.sampleRate, 1); });
 		voices = Array.fill(maxVoices, {arg i;
-			0.1.wait; // Workaround: wait to avoid jack "Supercollider was not finished" errors
+			0.2.wait; // Workaround: wait to avoid jack "Supercollider was not finished" errors
 			Synth(\stretch, [buf: buffers[i], envbuf: grainEnv, out: context.out_b.index], target: pg);
 		});
 
@@ -32,7 +32,7 @@ Engine_Glacial : CroneEngine {
 
 	stretchdef {
 		^SynthDef(\stretch, {
-			arg out, buf, envbuf, pan=0, stretch=100, window=0.25, amp=0.7, pitchMix=0.5, pitchHarm=2.0, panRate=0, panDepth=0;
+			arg out, buf, envbuf, pan=0, stretch=100, window=0.25, amp=0, pitchMix=0, pitchHarm=2.0, panRate=1/10, panDepth=0;
 			var trigPeriod, sig, chain, trig, pos, fftSize, fftCompensation;
 
 			// Calculating fft buffer size according to suggested window size
