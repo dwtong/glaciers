@@ -41,3 +41,5 @@ Install through Maiden:
 Be sure to restart to make sure Glacial Engine is loaded.
 
 https://github.com/dwtong/glaciers
+
+https://llllllll.co/t/glaciers/45117

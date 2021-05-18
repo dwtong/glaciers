@@ -1,10 +1,12 @@
 -- glaciers
 -- @dwtong
+-- https://llllllll.co/t/glaciers/45117
 --
 -- extreme sound stretcher
 -- based on paulstretch
+-- four voices with harmoniser
 --
--- Load up to four samples in params menu
+-- Load samples in params menu
 -- E1 - Change voice
 -- E2 - Select parameter
 -- E3 - Change parameter value
