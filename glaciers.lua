@@ -1,3 +1,14 @@
+-- glaciers
+-- @dwtong
+--
+-- extreme sound stretcher
+-- based on paulstretch
+--
+-- Load up to four samples in params menu
+-- E1 - Change voice
+-- E2 - Select parameter
+-- E3 - Change parameter value
+
 engine.name = "Glacial"
 
 MusicUtil = require "musicutil"
