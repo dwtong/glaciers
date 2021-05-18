@@ -135,6 +135,7 @@ Engine_Glacial : CroneEngine {
 	free {
 		buffers.do({ arg b; b.free });
 		voices.do({ arg v; v.free });
+		grainEnv.free;
 	}
 }
 
