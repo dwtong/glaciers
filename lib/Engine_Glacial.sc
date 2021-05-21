@@ -32,7 +32,9 @@ Engine_Glacial : CroneEngine {
 
 	stretchdef {
 		^SynthDef(\stretch, {
-			arg out, buf, envbuf, pan=0, stretch=100, stretchscale=1, window=0.25, amp=0, pitchMix=0, pitchHarm=2.0, panRate=1/10, panDepth=0;
+			arg out, buf, envbuf, pan=0, stretch=100, stretchscale=1, window=0.25, amp=0,
+			pitchMix=0, pitchHarm=2.0, panRate=1/10, panDepth=0,
+			bpFreq=700, bpWidth=10;
 			var trigPeriod, sig, chain, trig, pos, fftSize, fftCompensation;
 
 			// Calculating fft buffer size according to suggested window size
@@ -49,7 +51,7 @@ Engine_Glacial : CroneEngine {
 			// grain position
 			// second grain position is offset
 			pos = Demand.ar(trig, 0, demandUGens: Dseries(0, trigPeriod/stretch));
-			pos = [pos, pos + (trigPeriod/(2*stretch))];
+			pos = [pos, pos + (trigPeriod/(2 * stretch))];
 			sig = GrainBuf.ar(1, trig, trigPeriod, buf, 1, pos, envbufnum: envbuf) * amp;
 
 			// FFT Processing
@@ -73,6 +75,9 @@ Engine_Glacial : CroneEngine {
 			// Compensate for delay introduced by FFT
 			fftCompensation = (fftSize - BlockSize.ir)/SampleRate.ir;
 			sig = DelayC.ar(sig, fftCompensation, fftCompensation);
+
+			// Filtering
+			sig = BBandPass.ar(sig, bpFreq, bpWidth);
 
 			// Panning
 			sig = Mix.new(sig);
@@ -131,6 +136,16 @@ Engine_Glacial : CroneEngine {
 		this.addCommand("volume", "if", { arg msg;
 			var voice = msg[1] - 1;
 			voices[voice].set(\amp, msg[2].dbamp);
+		});
+
+		this.addCommand("bpwidth", "ii", { arg msg;
+			var voice = msg[1] - 1;
+			voices[voice].set(\bpWidth, msg[2]);
+		});
+
+		this.addCommand("bpfreq", "ii", { arg msg;
+			var voice = msg[1] - 1;
+			voices[voice].set(\bpFreq, msg[2]);
 		});
 	}
 

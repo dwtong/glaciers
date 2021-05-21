@@ -37,42 +37,57 @@ function init()
 
     params:add{type = "taper", id = i .. "stretch", name = i .. " stretch",
       min=1, max=4000, default = 100, k = 25,
-      action = function(s) engine.stretch(i, s)
+      action = function(v)
+        engine.stretch(i, v)
         redraw()
       end}
 
     params:add{type = "taper", id = i .. "pan rate", name = i .. " pan rate",
       min=0.1, max=30, default = 10, k = -1, units = "s",
-      action = function(s)
-        engine.panrate(i, 1/s)
+      action = function(v)
+        engine.panrate(i, 1/v)
         redraw()
       end}
 
     params:add{type = "taper", id = i .. "pan position", name = i .. " pan position",
       min=-1.0, max=1.0, default = 0.0,
-      action = function(p)
-        engine.pan(i, p)
+      action = function(v)
+        engine.pan(i, v)
         redraw()
       end}
 
     params:add{type = "control", id = i .. "pan spread", name = i .. " pan spread",
       controlspec = controlspec.new(0.0, 1.0, "lin", 0.01, 0.0),
-      action = function(s)
-        engine.pandepth(i, s)
+      action = function(v)
+        engine.pandepth(i, v)
         redraw()
       end}
 
     params:add{type = "control", id = i .. "harmonic mix", name = i .. " harmonic mix",
       controlspec = controlspec.new(0.0, 1.0, "lin", 0.01, 0.0),
-      action = function(s)
-        engine.pitchmix(i, s)
+      action = function(v)
+        engine.pitchmix(i, v)
         redraw()
       end}
 
     params:add{type = "number", id = i .. "harmonic oct", name = i .. " harmonic oct",
       min = -3, max = 3, default = 1,
-      action = function(o)
-        engine.pitchharm(i, MusicUtil.interval_to_ratio(12 * o))
+      action = function(v)
+        engine.pitchharm(i, MusicUtil.interval_to_ratio(12 * v))
+        redraw()
+      end}
+
+    params:add{type = "number", id = i .. "filter width", name = i .. " filter width",
+      min = 1, max = 10, default = 10,
+      action = function(v)
+        engine.bpwidth(i, v)
+        redraw()
+      end}
+
+    params:add{type = "control", id = i .. "filter freq", name = i .. " filter freq",
+      controlspec = controlspec.new(20, 20000, "exp", 1, 1000),
+      action = function(v)
+        engine.bpfreq(i, v)
         redraw()
       end}
     end
