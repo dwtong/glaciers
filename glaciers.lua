@@ -29,7 +29,7 @@ function init()
       end}
 
     params:add{type = "control", id = i .. "volume", name = i .. " volume",
-      controlspec = controlspec.new(-48, 5, "lin", 1, -48, "db"),
+      controlspec = controlspec.DB,
       action = function(v)
         engine.volume(i, v)
         redraw()
@@ -49,22 +49,22 @@ function init()
         redraw()
       end}
 
-    params:add{type = "taper", id = i .. "pan position", name = i .. " pan position",
-      min=-1.0, max=1.0, default = 0.0,
+    params:add{type = "control", id = i .. "pan position", name = i .. " pan position",
+      controlspec = controlspec.PAN,
       action = function(v)
         engine.pan(i, v)
         redraw()
       end}
 
     params:add{type = "control", id = i .. "pan spread", name = i .. " pan spread",
-      controlspec = controlspec.new(0.0, 1.0, "lin", 0.01, 0.0),
+      controlspec = controlspec.UNIPOLAR,
       action = function(v)
         engine.pandepth(i, v)
         redraw()
       end}
 
     params:add{type = "control", id = i .. "harmonic mix", name = i .. " harmonic mix",
-      controlspec = controlspec.new(0.0, 1.0, "lin", 0.01, 0.0),
+      controlspec = controlspec.UNIPOLAR,
       action = function(v)
         engine.pitchmix(i, v)
         redraw()
@@ -85,7 +85,7 @@ function init()
       end}
 
     params:add{type = "control", id = i .. "filter freq", name = i .. " filter freq",
-      controlspec = controlspec.new(20, 20000, "exp", 1, 1000),
+      controlspec = controlspec.FREQ,
       action = function(v)
         engine.bpfreq(i, v)
         redraw()

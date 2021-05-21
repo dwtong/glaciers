@@ -34,7 +34,7 @@ Engine_Glacial : CroneEngine {
 		^SynthDef(\stretch, {
 			arg out, buf, envbuf, pan=0, stretch=100, stretchscale=1, window=0.25, amp=0,
 			pitchMix=0, pitchHarm=2.0, panRate=1/10, panDepth=0,
-			bpFreq=700, bpWidth=10;
+			bpFreq=440, bpWidth=10;
 			var trigPeriod, sig, chain, trig, pos, fftSize, fftCompensation;
 
 			// Calculating fft buffer size according to suggested window size
