@@ -23,36 +23,59 @@ local active_param = 1
 function init()
   for i = 1, max_voices do
     params:add{type = "file", id = i .. "sample", name = i .. " sample",
-      action = function(file) engine.read(i, file) end}
+      action = function(file)
+        engine.read(i, file)
+        redraw()
+      end}
 
     params:add{type = "control", id = i .. "volume", name = i .. " volume",
       controlspec = controlspec.new(-48, 5, "lin", 1, -48, "db"),
-      action = function(v) engine.volume(i, v) end}
+      action = function(v)
+        engine.volume(i, v)
+        redraw()
+      end}
 
     params:add{type = "taper", id = i .. "stretch", name = i .. " stretch",
       min=1, max=4000, default = 100, k = 25,
-      action = function(s) engine.stretch(i, s) end}
+      action = function(s) engine.stretch(i, s)
+        redraw()
+      end}
 
     params:add{type = "taper", id = i .. "pan rate", name = i .. " pan rate",
       min=0.1, max=30, default = 10, k = -1, units = "s",
-      action = function(s) engine.panrate(i, 1/s) end}
+      action = function(s)
+        engine.panrate(i, 1/s)
+        redraw()
+      end}
 
     params:add{type = "taper", id = i .. "pan position", name = i .. " pan position",
       min=-1.0, max=1.0, default = 0.0,
-      action = function(p) engine.pan(i, p) end}
+      action = function(p)
+        engine.pan(i, p)
+        redraw()
+      end}
 
     params:add{type = "control", id = i .. "pan spread", name = i .. " pan spread",
       controlspec = controlspec.new(0.0, 1.0, "lin", 0.01, 0.0),
-      action = function(s) engine.pandepth(i, s) end}
+      action = function(s)
+        engine.pandepth(i, s)
+        redraw()
+      end}
 
     params:add{type = "control", id = i .. "harmonic mix", name = i .. " harmonic mix",
       controlspec = controlspec.new(0.0, 1.0, "lin", 0.01, 0.0),
-      action = function(s) engine.pitchmix(i, s) end}
+      action = function(s)
+        engine.pitchmix(i, s)
+        redraw()
+      end}
 
     params:add{type = "number", id = i .. "harmonic oct", name = i .. " harmonic oct",
       min = -3, max = 3, default = 1,
-      action = function(o) engine.pitchharm(i, MusicUtil.interval_to_ratio(12 * o)) end}
-  end
+      action = function(o)
+        engine.pitchharm(i, MusicUtil.interval_to_ratio(12 * o))
+        redraw()
+      end}
+    end
 
   redraw()
 end
