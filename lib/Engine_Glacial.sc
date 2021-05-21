@@ -32,13 +32,15 @@ Engine_Glacial : CroneEngine {
 
 	stretchdef {
 		^SynthDef(\stretch, {
-			arg out, buf, envbuf, pan=0, stretch=100, window=0.25, amp=0, pitchMix=0, pitchHarm=2.0, panRate=1/10, panDepth=0;
+			arg out, buf, envbuf, pan=0, stretch=100, stretchscale=1, window=0.25, amp=0, pitchMix=0, pitchHarm=2.0, panRate=1/10, panDepth=0;
 			var trigPeriod, sig, chain, trig, pos, fftSize, fftCompensation;
 
 			// Calculating fft buffer size according to suggested window size
-			// Reduce by half to optimise for Norns and double stretch to compensate
+			// Reduce by half to optimise for Norns
 			fftSize = (2 ** floor(log2(window * SampleRate.ir))) / 2;
-			stretch = stretch * 2;
+
+			// scale stretch based on buffer size
+			stretch = stretch * stretchscale;
 
 			// Windows (using grains)
 			trigPeriod = fftSize/SampleRate.ir;
@@ -87,7 +89,7 @@ Engine_Glacial : CroneEngine {
 		var newbuf = Buffer.readChannel(context.server, path, channels: [0], action: {
 			buffers[voice].free;
 			buffers[voice] = newbuf;
-			voices[voice].set(\buf, newbuf);
+			voices[voice].set(\buf, newbuf, \stretchscale, newbuf.duration);
 		});
 	}
 
