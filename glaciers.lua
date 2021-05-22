@@ -27,6 +27,7 @@ page_params["filter"] = {[1]="freq", [2]="width"}
 local active_page = 1
 local active_param = 1
 local alt = false
+local rec = false
 
 function init()
   for i=1, max_voices do add_params(i) end
@@ -54,7 +55,7 @@ function enc(n, d)
   local active_page_params = page_params[pages[active_page]]
   local param_name = voice .. "_" .. pages[active_page] .. "_" .. active_page_params[active_param]
 
-  if n == 1 then
+  if n == 1 and not (alt or rec) then
     voice = math.min(max_voices, (math.max(voice + change, 1)))
   elseif n == 2 then
     active_param = math.min(#active_page_params, (math.max(active_param + change, 1)))
@@ -67,7 +68,7 @@ end
 
 
 function redraw()
-  local page_name = pages[active_page]
+  local page_name = (alt or rec) and "buffer" or pages[active_page]
   local render_params = page_params[page_name]
 
   screen.clear()
@@ -87,17 +88,29 @@ function redraw()
   screen.font_face(1)
   screen.font_size(8)
 
-  for i, param_name in pairs(render_params) do
-    if active_param == i then
-      screen.level(15)
-      screen.move(37, (i + 1.5) * 10)
-      screen.text(">")
-    else
-      screen.level(2)
+  if alt or rec then
+    screen.level(15)
+    screen.move(45, 25)
+    screen.text("state: playing")
+
+    screen.level(2)
+    screen.move(45, 35)
+    screen.text("K2: clear")
+    screen.move(45, 45)
+    screen.text("K3: record")
+  else
+    for i, param_name in pairs(render_params) do
+      if active_param == i then
+        screen.level(15)
+        screen.move(37, (i + 1.5) * 10)
+        screen.text(">")
+      else
+        screen.level(2)
+      end
+      screen.move(45, (i + 1.5) * 10)
+      screen.text(param_name:gsub("_", " ") .. ": ")
+      screen.text(params:string(voice .. "_" .. page_name .. "_" .. param_name))
     end
-    screen.move(45, (i + 1.5) * 10)
-    screen.text(param_name:gsub("_", " ") .. ": ")
-    screen.text(params:string(voice .. "_" .. page_name .. "_" .. param_name))
   end
 
   screen.update()
