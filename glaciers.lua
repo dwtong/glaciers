@@ -51,14 +51,15 @@ end
 
 function enc(n, d)
   local change = util.clamp(d, -1, 1)
+  local active_page_params = page_params[pages[active_page]]
+  local param_name = voice .. "_" .. pages[active_page] .. "_" .. active_page_params[active_param]
 
   if n == 1 then
-    voice = math.min(4, (math.max(voice + change, 1)))
+    voice = math.min(max_voices, (math.max(voice + change, 1)))
   elseif n == 2 then
-    active_param = math.min(6, (math.max(active_param + change, 1)))
+    active_param = math.min(#active_page_params, (math.max(active_param + change, 1)))
   elseif n == 3 then
-    local param = voice .. page_params[active_param]
-    params:delta(param, d)
+    params:delta(param_name, d)
   end
 
   redraw()
@@ -80,7 +81,7 @@ function redraw()
   screen.font_face(1)
   screen.font_size(8)
 
-  screen.move(40, 10)
+  screen.move(45, 10)
   screen.text(page_name:upper())
 
   screen.font_face(1)
@@ -89,12 +90,12 @@ function redraw()
   for i, param_name in pairs(render_params) do
     if active_param == i then
       screen.level(15)
-      screen.move(32, (i + 1.5) * 10)
+      screen.move(37, (i + 1.5) * 10)
       screen.text(">")
     else
       screen.level(2)
     end
-    screen.move(40, (i + 1.5) * 10)
+    screen.move(45, (i + 1.5) * 10)
     screen.text(param_name:gsub("_", " ") .. ": ")
     screen.text(params:string(voice .. "_" .. page_name .. "_" .. param_name))
   end
