@@ -15,82 +15,36 @@ engine.name = "Glacial"
 
 MusicUtil = require "musicutil"
 
-local voice = 1;
-local max_voices = 4;
-local render_params = {[1]="volume", [2]="stretch", [3]="pan spread", [4]="pan rate", [5]="harmonic oct", [6]="harmonic mix"}
+local voice = 1
+local max_voices = 4
+local pages = {[1]="sound", [2]="pan", [3]="filter"}
+local page_params = {}
+
+page_params["sound"] = {[1]="volume", [2]="stretch", [3]="harmonic_oct", [4]="harmonic_mix"}
+page_params["pan"] = {[1]="position", [2]="lfo_spread", [3]="lfo_rate"}
+page_params["filter"] = {[1]="freq", [2]="width"}
+
+local active_page = 1
 local active_param = 1
+local alt = false
 
 function init()
-  for i = 1, max_voices do
-    params:add{type = "file", id = i .. "sample", name = i .. " sample",
-      action = function(file)
-        engine.read(i, file)
-        redraw()
-      end}
+  for i=1, max_voices do add_params(i) end
+  redraw()
+end
 
-    params:add{type = "control", id = i .. "volume", name = i .. " volume",
-      controlspec = controlspec.DB,
-      action = function(v)
-        engine.volume(i, v)
-        redraw()
-      end}
+function key(n, z)
+  if n == 1 then
+    alt = z == 1
+  end
 
-    params:add{type = "taper", id = i .. "stretch", name = i .. " stretch",
-      min=1, max=4000, default = 100, k = 25,
-      action = function(v)
-        engine.stretch(i, v)
-        redraw()
-      end}
-
-    params:add{type = "taper", id = i .. "pan rate", name = i .. " pan rate",
-      min=0.1, max=30, default = 10, k = -1, units = "s",
-      action = function(v)
-        engine.panrate(i, 1/v)
-        redraw()
-      end}
-
-    params:add{type = "control", id = i .. "pan position", name = i .. " pan position",
-      controlspec = controlspec.PAN,
-      action = function(v)
-        engine.pan(i, v)
-        redraw()
-      end}
-
-    params:add{type = "control", id = i .. "pan spread", name = i .. " pan spread",
-      controlspec = controlspec.UNIPOLAR,
-      action = function(v)
-        engine.pandepth(i, v)
-        redraw()
-      end}
-
-    params:add{type = "control", id = i .. "harmonic mix", name = i .. " harmonic mix",
-      controlspec = controlspec.UNIPOLAR,
-      action = function(v)
-        engine.pitchmix(i, v)
-        redraw()
-      end}
-
-    params:add{type = "number", id = i .. "harmonic oct", name = i .. " harmonic oct",
-      min = -3, max = 3, default = 1,
-      action = function(v)
-        engine.pitchharm(i, MusicUtil.interval_to_ratio(12 * v))
-        redraw()
-      end}
-
-    params:add{type = "number", id = i .. "filter width", name = i .. " filter width",
-      min = 1, max = 10, default = 10,
-      action = function(v)
-        engine.bpwidth(i, v)
-        redraw()
-      end}
-
-    params:add{type = "control", id = i .. "filter freq", name = i .. " filter freq",
-      controlspec = controlspec.FREQ,
-      action = function(v)
-        engine.bpfreq(i, v)
-        redraw()
-      end}
+  if z == 1 then
+    if n == 2 and active_page > 1 then
+      active_page = active_page - 1
+    elseif n == 3 and active_page < 3 then
+      active_page = active_page + 1
     end
+  end
 
   redraw()
 end
@@ -103,7 +57,7 @@ function enc(n, d)
   elseif n == 2 then
     active_param = math.min(6, (math.max(active_param + change, 1)))
   elseif n == 3 then
-    local param = voice .. render_params[active_param]
+    local param = voice .. page_params[active_param]
     params:delta(param, d)
   end
 
@@ -112,6 +66,9 @@ end
 
 
 function redraw()
+  local page_name = pages[active_page]
+  local render_params = page_params[page_name]
+
   screen.clear()
 
   screen.font_face(1)
@@ -123,18 +80,95 @@ function redraw()
   screen.font_face(1)
   screen.font_size(8)
 
-  for i,name in pairs(render_params) do
+  screen.move(40, 10)
+  screen.text(page_name:upper())
+
+  screen.font_face(1)
+  screen.font_size(8)
+
+  for i, param_name in pairs(render_params) do
     if active_param == i then
       screen.level(15)
-      screen.move(32, i * 10)
+      screen.move(32, (i + 1.5) * 10)
       screen.text(">")
     else
       screen.level(2)
     end
-    screen.move(40, i * 10)
-    screen.text(string.upper(name) .. ": ")
-    screen.text(params:string(voice .. name))
+    screen.move(40, (i + 1.5) * 10)
+    screen.text(param_name:gsub("_", " ") .. ": ")
+    screen.text(params:string(voice .. "_" .. page_name .. "_" .. param_name))
   end
 
   screen.update()
+end
+
+function add_params(voice)
+  params:add{type = "file", id = voice .. "_sound_sample", name = voice .. " sample",
+    action = function(file)
+      engine.read(voice, file)
+      redraw()
+    end}
+
+  params:add{type = "control", id = voice .. "_sound_volume", name = voice .. " volume",
+    controlspec = controlspec.DB,
+    action = function(v)
+      engine.volume(voice, v)
+      redraw()
+    end}
+
+  params:add{type = "taper", id = voice .. "_sound_stretch", name = voice .. " stretch",
+    min=1, max=4000, default = 100, k = 25,
+    action = function(v)
+      engine.stretch(voice, v)
+      redraw()
+    end}
+
+  params:add{type = "control", id = voice .. "_sound_harmonic_mix", name = voice .. " harmonic mix",
+    controlspec = controlspec.UNIPOLAR,
+    action = function(v)
+      engine.pitchmix(voice, v)
+      redraw()
+    end}
+
+  params:add{type = "number", id = voice .. "_sound_harmonic_oct", name = voice .. " harmonic oct",
+    min = -3, max = 3, default = 1,
+    action = function(v)
+      engine.pitchharm(voice, MusicUtil.interval_to_ratio(12 * v))
+      redraw()
+    end}
+
+  params:add{type = "control", id = voice .. "_pan_position", name = voice .. " pan position",
+    controlspec = controlspec.PAN,
+    action = function(v)
+      engine.pan(voice, v)
+      redraw()
+    end}
+
+  params:add{type = "taper", id = voice .. "_pan_lfo_rate", name = voice .. " pan rate",
+    min=0.1, max=30, default = 10, k = -1, units = "s",
+    action = function(v)
+      engine.panrate(voice, 1/v)
+      redraw()
+    end}
+
+  params:add{type = "control", id = voice .. "_pan_lfo_spread", name = voice .. " pan spread",
+    controlspec = controlspec.UNIPOLAR,
+    action = function(v)
+      engine.pandepth(voice, v)
+      redraw()
+    end}
+
+  params:add{type = "number", id = voice .. "_filter_width", name = voice .. " filter width",
+    min = 1, max = 10, default = 10,
+    action = function(v)
+      engine.bpwidth(voice, v)
+      redraw()
+    end}
+
+  params:add{type = "control", id = voice .. "_filter_freq", name = voice .. " filter freq",
+    controlspec = controlspec.FREQ,
+    action = function(v)
+      engine.bpfreq(voice, v)
+      redraw()
+    end}
 end
