@@ -15,6 +15,7 @@ engine.name = "Glacial"
 
 musicutil = require "musicutil"
 fileselect = require "fileselect"
+
 local redraw_fs = false
 
 local voice = 1
@@ -47,9 +48,23 @@ states["stopped"] = {
 
 local active_page = 1
 local active_param = 1
+
 local alt = false
+local rec_start = nil
 
 function init()
+
+  params:add_separator("GLOBAL")
+  params:add{type = "number", id = "gain_offset", name = "gain offset",
+    min = -12, max = 12, default = 0,
+    action = function(d)
+      for i=1, max_voices do
+        local vol = params:get(i .. "_sound_volume") + d
+        engine.volume(i, vol)
+      end
+    end
+  }
+
   for i=1, max_voices do
     add_params(i)
     voice_states[i] = "stopped"
@@ -153,6 +168,8 @@ function change_page(k)
   elseif k == 3 and active_page < 3 then
     active_page = active_page + 1
   end
+
+  active_param = 1
 end
 
 function record_input()
@@ -185,7 +202,7 @@ function load_file()
 end
 
 function add_params(voice)
-  params:add_separator()
+  params:add_separator("VOICE " .. voice)
 
   params:add{type = "file", id = voice .. "_sound_sample", name = voice .. " sample",
     action = function(file)
@@ -201,7 +218,7 @@ function add_params(voice)
   params:add{type = "control", id = voice .. "_sound_volume", name = voice .. " volume",
     controlspec = controlspec.DB,
     action = function(v)
-      engine.volume(voice, v)
+      engine.volume(voice, v + params:get("gain_offset"))
       redraw()
     end
   }
