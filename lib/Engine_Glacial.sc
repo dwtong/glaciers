@@ -98,9 +98,19 @@ Engine_Glacial : CroneEngine {
 		});
 	}
 
+	clearBuffer { arg voice;
+		buffers[voice].free;
+		buffers[voice] = Buffer.alloc(context.server, context.server.sampleRate, 1);
+		voices[voice].set(\buf, buffers[voice], \stretchscale, buffers[voice].duration);
+	}
+
 	addCommands {
 		this.addCommand("read", "is", { arg msg;
 			this.loadBuffer(msg[1] - 1, msg[2]);
+		});
+
+		this.addCommand("clear", "i", { arg msg;
+			this.clearBuffer(msg[1] - 1);
 		});
 
 		this.addCommand("stretch", "ii", { arg msg;
@@ -150,8 +160,8 @@ Engine_Glacial : CroneEngine {
 	}
 
 	free {
-		buffers.do({ arg b; b.free });
 		voices.do({ arg v; v.free });
+		buffers.do({ arg b; b.free });
 		grainEnv.free;
 	}
 }

@@ -13,7 +13,9 @@
 
 engine.name = "Glacial"
 
-MusicUtil = require "musicutil"
+musicutil = require "musicutil"
+fileselect = require "fileselect"
+local redraw_fs = false
 
 local voice = 1
 local max_voices = 4
@@ -59,7 +61,7 @@ end
 function key(n, z)
   local voice_state = voice_states[voice] 
 
-  if (alt or voice_state == "recording") and z == 1 then
+  if alt and z == 1 then
     if n == 2 then
       states[voice_state].k2_action()
     elseif n == 3 then
@@ -71,7 +73,11 @@ function key(n, z)
     change_page(n)
   end
 
-  redraw()
+  if redraw_fs then
+    fileselect.redraw()
+  else
+    redraw()
+  end
 end
 
 function enc(n, d)
@@ -92,7 +98,7 @@ end
 
 function redraw()
   local voice_state = voice_states[voice]
-  local page_name = (alt or voice_state == "recording") and "buffer" or pages[active_page]
+  local page_name = alt and "buffer" or pages[active_page]
   local render_params = page_params[page_name]
   local state = states[voice_state]
 
@@ -162,11 +168,20 @@ end
 function clear_buffer()
   print("clear buffer " .. voice)
   voice_states[voice] = "stopped"
+  engine.clear(voice)
+  params:set(voice .. "_sound_sample", "")
 end
 
 function load_file()
   print("load file " .. voice)
-  voice_states[voice] = "playing"
+  redraw_fs = true
+
+  fileselect.enter(_path.audio, function(path)
+    params:set(voice .. "_sound_sample", path)
+    alt = false
+    redraw_fs = false
+    redraw()
+  end)
 end
 
 function add_params(voice)
@@ -174,7 +189,11 @@ function add_params(voice)
 
   params:add{type = "file", id = voice .. "_sound_sample", name = voice .. " sample",
     action = function(file)
-      engine.read(voice, file)
+      if file ~= "" then
+        engine.read(voice, file)
+        voice_states[voice] = "playing"
+      end
+
       redraw()
     end
   }
@@ -206,7 +225,7 @@ function add_params(voice)
   params:add{type = "number", id = voice .. "_sound_harmonic_oct", name = voice .. " harmonic oct",
     min = -3, max = 3, default = 1,
     action = function(v)
-      engine.pitchharm(voice, MusicUtil.interval_to_ratio(12 * v))
+      engine.pitchharm(voice, musicutil.interval_to_ratio(12 * v))
       redraw()
     end
   }
