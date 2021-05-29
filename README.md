@@ -25,21 +25,14 @@ Particular thanks to:
 * @tehn @zebra and everyone else in the community for norns and all the knowledge, advice, and creativity that is shared on lines.
 
 ## Documentation
-* Load up to four samples in params menu
-* E1 - Change voice
-* E2 - Select parameter
-* E3 - Change parameter value
+https://norns.community/e/en/authors/dwtong/glaciers
 
 ## Requirements
 Norns
 
 ## Download
-Install through Maiden: 
-
-`;install https://github.com/dwtong/glaciers`
-
+Install through the community catalogue on Maiden (don’t forget to refresh).
 Be sure to restart to make sure Glacial Engine is loaded.
 
 https://github.com/dwtong/glaciers
-
 https://llllllll.co/t/glaciers/45117
