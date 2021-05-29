@@ -6,7 +6,11 @@
 -- based on paulstretch
 -- four voices with harmoniser
 --
--- Load samples in params menu
+-- Hold K1 to open buffer menu
+-- K2 to load file
+-- K3 to record
+--
+-- K2 and K3 change pages
 -- E1 - Change voice
 -- E2 - Select parameter
 -- E3 - Change parameter value
@@ -50,7 +54,8 @@ local active_page = 1
 local active_param = 1
 
 local alt = false
-local rec_start = nil
+local rec_start = 0
+local rec_finish = 0
 
 function init()
 
@@ -174,16 +179,73 @@ end
 
 function record_input()
   print("record input " .. voice)
+
+  rec_start = util.time()
+
+  audio.level_eng_cut(0)
+  audio.level_tape_cut(0)
+  softcut.buffer_clear()
+
+  for i = 1, 2 do
+    softcut.enable(i, 1)
+    softcut.pan(i, i == 1 and 1 or -1)
+    softcut.buffer(i, i)
+    softcut.level(i, 0)
+
+    softcut.rec(i, 1)
+    softcut.play(i, 1)
+    softcut.rate(i, 1)
+    softcut.position(i, 0)
+
+    softcut.loop_start(i, 0)
+    softcut.loop_end(i, 60)
+
+    softcut.rec_level(i, 1.0)
+    softcut.pre_level(i, 1.0)
+  end
+
+  softcut.level_input_cut(1, 1, 1)
+  softcut.level_input_cut(1, 2, 0)
+  softcut.level_input_cut(2, 1, 0)
+  softcut.level_input_cut(2, 2, 1)
+
   voice_states[voice] = "recording"
 end
 
 function save_recording()
   print("save recording " .. voice)
+
+  rec_finish = util.time()
+
+  local path = _path.audio .. "glaciers/"
+  local file = path .. os.date("%y%m%d_%H%M%S") .. ".wav"
+
+  for i = 1, 2 do
+    softcut.rec(i, 0)
+    softcut.play(i, 0)
+    softcut.level_input_cut(i, 1, 0.0)
+    softcut.rec_level(i, 0)
+    softcut.pre_level(i, 0)
+  end
+
+  if not util.file_exists(path) then
+    os.execute("mkdir -p " .. path)
+  end
+
+  softcut.buffer_write_stereo(file, 0, rec_finish - rec_start)
+
+  params:set(voice .. "_sound_sample", file)
   voice_states[voice] = "playing"
 end
 
 function clear_buffer()
   print("clear buffer " .. voice)
+
+  if voice_states[voice] == "recording" then
+    softcut.rec(1, 0)
+    softcut.play(1, 0)
+  end
+
   voice_states[voice] = "stopped"
   engine.clear(voice)
   params:set(voice .. "_sound_sample", "")
