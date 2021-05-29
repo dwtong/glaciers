@@ -238,8 +238,12 @@ function save_recording()
 
   softcut.buffer_write_stereo(file, 0, rec_finish - rec_start)
 
-  params:set(voice .. "_sound_sample", file)
   voice_states[voice] = "playing"
+
+  clock.run(function()
+    clock.sleep(1)
+    params:set(voice .. "_sound_sample", file)
+  end)
 end
 
 function clear_buffer()
