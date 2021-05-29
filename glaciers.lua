@@ -81,16 +81,18 @@ end
 function key(n, z)
   local voice_state = voice_states[voice] 
 
-  if alt and z == 1 then
-    if n == 2 then
+  if z == 1 then
+    if alt and n == 2 then
       states[voice_state].k2_action()
-    elseif n == 3 then
+    elseif alt and n == 3 then
       states[voice_state].k3_action()
+    else
+      change_page(n)
     end
-  elseif n == 1 then
-    alt = z == 1
-  elseif z == 1 then
-    change_page(n)
+  end
+
+  if z == 0 then
+    alt = voice_state == "recording"
   end
 
   if redraw_fs then
@@ -167,10 +169,12 @@ function redraw()
   screen.update()
 end
 
-function change_page(k)
-  if k == 2 and active_page > 1 then
+function change_page(n)
+  if n == 1 then
+    alt = true
+  elseif n == 2 and active_page > 1 then
     active_page = active_page - 1
-  elseif k == 3 and active_page < 3 then
+  elseif n == 3 and active_page < 3 then
     active_page = active_page + 1
   end
 
@@ -248,7 +252,7 @@ function clear_buffer()
 
   voice_states[voice] = "stopped"
   engine.clear(voice)
-  params:set(voice .. "_sound_sample", "")
+  params:set(voice .. "_sound_sample", "cancel")
 end
 
 function load_file()
@@ -268,7 +272,7 @@ function add_params(voice)
 
   params:add{type = "file", id = voice .. "_sound_sample", name = voice .. " sample",
     action = function(file)
-      if file ~= "" then
+      if file ~= "cancel" then
         engine.read(voice, file)
         voice_states[voice] = "playing"
       end
