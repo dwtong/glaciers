@@ -25,7 +25,7 @@ Particular thanks to:
 * @tehn @zebra and everyone else in the community for norns and all the knowledge, advice, and creativity that is shared on lines.
 
 ## Documentation
-https://norns.community/e/en/authors/dwtong/glaciers
+https://norns.community/en/authors/dwtong/glaciers
 
 ## Requirements
 Norns
