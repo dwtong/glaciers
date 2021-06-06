@@ -113,7 +113,7 @@ Engine_Glacial : CroneEngine {
 			this.clearBuffer(msg[1] - 1);
 		});
 
-		this.addCommand("stretch", "ii", { arg msg;
+		this.addCommand("stretch", "if", { arg msg;
 			var voice = msg[1] - 1;
 			voices[voice].set(\stretch, msg[2]);
 		});
