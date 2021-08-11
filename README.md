@@ -23,6 +23,7 @@ Particular thanks to:
 * [paulnasca](https://github.com/paulnasca/) for Paulstretch
 * [jpdrecourt](https://sccode.org/jpdrecourt)  for the [supercollider port of paulstretch](https://sccode.org/1-5d6)
 * @tehn @zebra and everyone else in the community for norns and all the knowledge, advice, and creativity that is shared on lines.
+* Audrius Meskauskas for photograph of [ice cracks in the Titlis glacier](https://commons.wikimedia.org/w/index.php?title=File:TitlisIceCracks.jpg&oldid=475075226) on Wikipedia Commons, adapted by @xmacex
 
 ## Documentation
 https://norns.community/en/authors/dwtong/glaciers

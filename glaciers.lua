@@ -14,6 +14,10 @@
 -- E1 - Change voice
 -- E2 - Select parameter
 -- E3 - Change parameter value
+--
+-- Photo of Titlis by Audrius
+-- Meskauskas on Wikipedia
+-- Commons.
 
 engine.name = "Glacial"
 
@@ -125,6 +129,8 @@ function redraw()
   local state = states[voice_state]
 
   screen.clear()
+
+  screen.display_png(_path.this.path.."img/glacier-"..voice..".png", 0, 0)
 
   screen.font_face(1)
   screen.font_size(48)
