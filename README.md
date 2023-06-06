@@ -37,21 +37,21 @@ Particular thanks to:
 
 ### buffer - stopped state
 
-![buffer1.png](./assets/buffer1.png)
+![buffer1.png](https://raw.githubusercontent.com/dwtong/glaciers/main/assets/buffer1.png)
 
 **k2** load a file from the norns audio directory
 **k3** immediately start recording live input
 
 ### buffer - playing state
 
-![buffer2.png](./assets/buffer2.png)
+![buffer2.png](https://raw.githubusercontent.com/dwtong/glaciers/main/assets/buffer2.png)
 
 **k2** clear buffer. stops currently playing file
 **k3** immediately start recording live input
 
 ### buffer - recording state
 
-![buffer3.png](./assets/buffer3.png)
+![buffer3.png](https://raw.githubusercontent.com/dwtong/glaciers/main/assets/buffer3.png)
 
 **k2** clear buffer. current recording will not be saved
 **k3** save recording. new recording will then be stretched.
@@ -61,7 +61,7 @@ Particular thanks to:
 
 ### sound
 
-![sound.png](./assets/sound.png)
+![sound.png](https://raw.githubusercontent.com/dwtong/glaciers/main/assets/sound.png)
 
 *general sound parameters*
 
@@ -73,7 +73,7 @@ Particular thanks to:
 
 ### pan
 
-![pan.png](./assets/pan.png)
+![pan.png](https://raw.githubusercontent.com/dwtong/glaciers/main/assets/pan.png)
 
 *move the sound through the stereo field*
 
@@ -83,7 +83,7 @@ Particular thanks to:
 
 ### filter
 
-![filter.png](./assets/filter.png)
+![filter.png](https://raw.githubusercontent.com/dwtong/glaciers/main/assets/filter.png)
 
 *a basic bandpass filter*
 
